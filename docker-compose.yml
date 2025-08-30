@@ -44,35 +44,42 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
-      target: production
+      target: development
     container_name: learnwords_app
     ports:
       - "${APP_PORT:-6773}:6773"
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-lesson_planner}
       - REDIS_URL=redis://redis:6379
+      - R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
+      - R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}
+      - R2_BUCKET_NAME=${R2_BUCKET_NAME}
+      - R2_ACCOUNT_ID=${R2_ACCOUNT_ID}
+      - R2_ENDPOINT_URL=${R2_ENDPOINT_URL}
+      - R2_PUBLIC_DOMAIN=${R2_PUBLIC_DOMAIN}
+      - STORAGE_BACKEND=${STORAGE_BACKEND:-local}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_REGION=${AWS_REGION:-us-east-1}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET}
+      - AI_PROVIDER=${AI_PROVIDER:-gemini}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-1.5-flash}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - SECRET_KEY=${SECRET_KEY}
-      - DEBUG=${DEBUG:-false}
-      - HOST=0.0.0.0
-      - PORT=6773
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-key}
+      - DEBUG=${DEBUG:-true}
+      - HOST=${HOST:-0.0.0.0}
+      - PORT=${APP_PORT:-6773}
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     volumes:
+      - .:/app
       - ./uploads:/app/uploads
       - ./logs:/app/logs
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:6773/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
     restart: unless-stopped
     networks:
       - learnwords_network
@@ -86,24 +93,37 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
-      target: production
+      target: development
     container_name: learnwords_worker
     command: celery -A app.celery_app worker --loglevel=info --concurrency=${WORKER_CONCURRENCY:-2}
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-lesson_planner}
       - REDIS_URL=redis://redis:6379
+      - R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
+      - R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}
+      - R2_BUCKET_NAME=${R2_BUCKET_NAME}
+      - R2_ACCOUNT_ID=${R2_ACCOUNT_ID}
+      - R2_ENDPOINT_URL=${R2_ENDPOINT_URL}
+      - R2_PUBLIC_DOMAIN=${R2_PUBLIC_DOMAIN}
+      - STORAGE_BACKEND=${STORAGE_BACKEND:-local}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_REGION=${AWS_REGION:-us-east-1}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET}
+      - AI_PROVIDER=${AI_PROVIDER:-gemini}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-1.5-flash}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - SECRET_KEY=${SECRET_KEY}
-      - DEBUG=${DEBUG:-false}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-key}
+      - DEBUG=${DEBUG:-true}
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     volumes:
+      - .:/app
       - ./uploads:/app/uploads
       - ./logs:/app/logs
     restart: unless-stopped
@@ -120,12 +140,10 @@ services:
     container_name: learnwords_nginx
     ports:
       - "${NGINX_PORT:-80}:80"
-      - "${NGINX_SSL_PORT:-443}:443"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro
       - ./uploads:/var/www/uploads:ro
+      - ./static:/var/www/static:ro
     depends_on:
       - app
     restart: unless-stopped

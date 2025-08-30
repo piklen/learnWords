@@ -7,8 +7,9 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
-    ports:
-      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    # 生产环境不暴露数据库端口到宿主机，提高安全性
+    # ports:
+    #   - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
@@ -38,8 +39,9 @@ services:
         redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
       fi
       "
-    ports:
-      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    # 生产环境不暴露Redis端口到宿主机，提高安全性
+    # ports:
+    #   - "127.0.0.1:${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -71,18 +73,46 @@ services:
       target: production
     container_name: learnwords_app_prod
     ports:
-      - "127.0.0.1:${APP_PORT:-6773}:6773"
+      - "${APP_PORT:-6773}:6773"
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-lesson_planner}
       - REDIS_URL=${REDIS_PASSWORD:+redis://:${REDIS_PASSWORD}@redis:6379}${REDIS_PASSWORD:-redis://redis:6379}
+      - R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
+      - R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}
+      - R2_BUCKET_NAME=${R2_BUCKET_NAME}
+      - R2_ACCOUNT_ID=${R2_ACCOUNT_ID}
+      - R2_ENDPOINT_URL=${R2_ENDPOINT_URL}
+      - R2_PUBLIC_DOMAIN=${R2_PUBLIC_DOMAIN}
+      - STORAGE_BACKEND=${STORAGE_BACKEND:-r2}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_REGION=${AWS_REGION:-us-east-1}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET}
+      - AI_PROVIDER=${AI_PROVIDER:-gemini}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-1.5-flash}
+      - GEMINI_MAX_TOKENS=${GEMINI_MAX_TOKENS:-2048}
+      - GEMINI_TEMPERATURE=${GEMINI_TEMPERATURE:-0.7}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4}
+      - OPENAI_MAX_TOKENS=${OPENAI_MAX_TOKENS:-2000}
+      - OPENAI_TEMPERATURE=${OPENAI_TEMPERATURE:-0.7}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-claude-3-sonnet-20240229}
+      - ANTHROPIC_MAX_TOKENS=${ANTHROPIC_MAX_TOKENS:-2000}
+      - ANTHROPIC_TEMPERATURE=${ANTHROPIC_TEMPERATURE:-0.7}
       - SECRET_KEY=${SECRET_KEY}
-      - DEBUG=false
-      - HOST=0.0.0.0
-      - PORT=6773
+      - DEBUG=${DEBUG:-false}
+      - HOST=${HOST:-0.0.0.0}
+      - PORT=${APP_PORT:-6773}
+      - NODE_ENV=production
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      - MAX_FILE_SIZE=${MAX_FILE_SIZE:-52428800}
+      - ALLOWED_FILE_TYPES=${ALLOWED_FILE_TYPES:-pdf,png,jpg,jpeg}
+      - RATE_LIMIT_PER_MINUTE=${RATE_LIMIT_PER_MINUTE:-100}
+      - CACHE_TTL=${CACHE_TTL:-3600}
+      - WEBSOCKET_PING_INTERVAL=${WEBSOCKET_PING_INTERVAL:-20}
+      - WEBSOCKET_PING_TIMEOUT=${WEBSOCKET_PING_TIMEOUT:-20}
     depends_on:
       postgres:
         condition: service_healthy
@@ -92,7 +122,7 @@ services:
       - ./uploads:/app/uploads
       - ./logs:/app/logs
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:6773/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -112,16 +142,37 @@ services:
       dockerfile: Dockerfile
       target: production
     container_name: learnwords_worker_prod
-    command: celery -A app.celery_app worker --loglevel=info --concurrency=${WORKER_CONCURRENCY:-4}
+    command: celery -A app.celery_app worker --loglevel=info --concurrency=${WORKER_CONCURRENCY:-2}
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-lesson_planner}
       - REDIS_URL=${REDIS_PASSWORD:+redis://:${REDIS_PASSWORD}@redis:6379}${REDIS_PASSWORD:-redis://redis:6379}
+      - R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
+      - R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}
+      - R2_BUCKET_NAME=${R2_BUCKET_NAME}
+      - R2_ACCOUNT_ID=${R2_ACCOUNT_ID}
+      - R2_ENDPOINT_URL=${R2_ENDPOINT_URL}
+      - R2_PUBLIC_DOMAIN=${R2_PUBLIC_DOMAIN}
+      - STORAGE_BACKEND=${STORAGE_BACKEND:-r2}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_REGION=${AWS_REGION:-us-east-1}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET}
+      - AI_PROVIDER=${AI_PROVIDER:-gemini}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-1.5-flash}
+      - GEMINI_MAX_TOKENS=${GEMINI_MAX_TOKENS:-2048}
+      - GEMINI_TEMPERATURE=${GEMINI_TEMPERATURE:-0.7}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4}
+      - OPENAI_MAX_TOKENS=${OPENAI_MAX_TOKENS:-2000}
+      - OPENAI_TEMPERATURE=${OPENAI_TEMPERATURE:-0.7}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-claude-3-sonnet-20240229}
+      - ANTHROPIC_MAX_TOKENS=${ANTHROPIC_MAX_TOKENS:-2000}
+      - ANTHROPIC_TEMPERATURE=${ANTHROPIC_TEMPERATURE:-0.7}
       - SECRET_KEY=${SECRET_KEY}
-      - DEBUG=false
+      - DEBUG=${DEBUG:-false}
+      - NODE_ENV=production
     depends_on:
       postgres:
         condition: service_healthy
@@ -150,6 +201,7 @@ services:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro
       - ./uploads:/var/www/uploads:ro
+      - ./static:/var/www/static:ro
     depends_on:
       - app
     restart: unless-stopped
