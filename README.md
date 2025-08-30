@@ -81,9 +81,30 @@ GEMINI_MODEL=gemini-1.5-flash
 
 ### 3. 启动服务
 
+#### 方法一：使用部署脚本（推荐）
+
 ```bash
-# 启动所有服务
+# 给脚本添加执行权限
+chmod +x deploy.sh
+
+# 部署开发环境
+./deploy.sh dev
+
+# 或部署生产环境
+./deploy.sh prod
+
+# 查看服务状态
+./deploy.sh status
+```
+
+#### 方法二：手动启动
+
+```bash
+# 开发环境
 docker-compose up -d
+
+# 生产环境
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d
 
 # 查看服务状态
 docker-compose ps

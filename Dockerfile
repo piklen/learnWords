@@ -29,7 +29,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 开发阶段
-FROM base as development
+FROM base AS development
 
 # 复制应用代码
 COPY . .
@@ -47,7 +47,7 @@ EXPOSE 6773
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "6773", "--reload"]
 
 # 生产阶段
-FROM base as production
+FROM base AS production
 
 # 复制应用代码
 COPY . .
@@ -55,7 +55,7 @@ COPY . .
 # 创建必要的目录并设置权限
 RUN mkdir -p uploads logs && \
     chown -R appuser:appuser /app && \
-    find /app/scripts -name "*.sh" -type f -exec chmod +x {} \; 2>/dev/null || true
+    if [ -d "/app/scripts" ]; then find /app/scripts -name "*.sh" -type f -exec chmod +x {} \; || true; fi
 
 # 切换到非root用户
 USER appuser
