@@ -1,2 +1,91 @@
-# Auto detect text files and perform LF normalization
+# ===========================================
+# Git属性配置文件
+# ===========================================
+
+# 自动检测文本文件并执行行结束符规范化
 * text=auto
+
+# 明确声明文本文件
+*.py text eol=lf
+*.js text eol=lf
+*.ts text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.scss text eol=lf
+*.json text eol=lf
+*.xml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.rst text eol=lf
+*.ini text eol=lf
+*.cfg text eol=lf
+*.conf text eol=lf
+*.sql text eol=lf
+*.sh text eol=lf
+*.dockerfile text eol=lf
+Dockerfile text eol=lf
+*.gitignore text eol=lf
+*.gitattributes text eol=lf
+
+# 声明二进制文件
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.tar.gz binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.otf binary
+
+# Python字节码文件
+*.pyc binary
+*.pyo binary
+
+# 数据库文件
+*.db binary
+*.sqlite binary
+*.sqlite3 binary
+
+# 证书和密钥文件
+*.key binary
+*.pem binary
+*.p12 binary
+*.pfx binary
+*.crt binary
+*.cer binary
+
+# Docker相关
+docker-compose*.yml text eol=lf
+
+# 配置文件
+requirements.txt text eol=lf
+*.env text eol=lf
+.env* text eol=lf
+
+# 忽略语言检测的文件
+*.min.js linguist-vendored
+*.min.css linguist-vendored
+node_modules/** linguist-vendored
+static/vendor/** linguist-vendored
+
+# 标记主要语言
+*.py linguist-language=Python
+*.js linguist-language=JavaScript
+*.html linguist-language=HTML
+*.css linguist-language=CSS
+
+# 导出忽略（用于创建分发包时）
+.gitignore export-ignore
+.gitattributes export-ignore
+.github/ export-ignore
+tests/ export-ignore
+docs/ export-ignore
+*.md export-ignore
+LICENSE export-ignore

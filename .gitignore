@@ -1,0 +1,383 @@
+# ===========================================
+# 智能教案生成平台 - Git忽略文件
+# ===========================================
+
+# 环境变量和配置文件
+.env
+.env.local
+.env.prod
+.env.production
+.env.development
+.env.test
+*.env
+config.local.py
+config.prod.py
+
+# 敏感信息和密钥文件
+secrets/
+keys/
+certificates/
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+
+# Python相关
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Python虚拟环境
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+.virtualenv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# PyCharm
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# 数据库文件
+*.db
+*.sqlite
+*.sqlite3
+db.sqlite3
+database.db
+
+# 日志文件
+logs/
+*.log
+log/
+*.log.*
+*.out
+
+# 上传文件和用户数据
+uploads/
+media/
+static/collected/
+user_files/
+temp/
+tmp/
+cache/
+
+# 备份文件
+backups/
+*.backup
+*.bak
+*.dump
+*.sql.gz
+*.tar.gz.backup
+
+# Docker相关
+.dockerignore.bak
+docker-compose.override.yml.bak
+.docker/
+
+# 操作系统相关
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# 编辑器和IDE临时文件
+*.swp
+*.swo
+*~
+.#*
+\#*#
+.*.tmp
+*.tmp
+*.temp
+
+# 测试覆盖率报告
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# 翻译文件
+*.mo
+*.pot
+
+# 文档生成
+docs/_build/
+.readthedocs.yml
+
+# Flask相关
+instance/
+.webassets-cache
+
+# Scrapy相关
+.scrapy
+
+# Sphinx文档
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+target/
+
+# Celery相关
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath解析文件
+*.sage.py
+
+# Spyder项目设置
+.spyderproject
+.spyproject
+
+# Rope项目设置
+.ropeproject
+
+# mkdocs文档
+/site
+
+# mypy类型检查
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre类型检查
+.pyre/
+
+# pytype静态类型分析
+.pytype/
+
+# Node.js相关（如果有前端组件）
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+.npm
+.eslintcache
+.stylelintcache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# 运行时数据
+pids
+*.pid
+*.seed
+*.pid.lock
+.grunt
+
+# Dependency directories
+jspm_packages/
+
+# TypeScript缓存
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+public
+
+# Storybook build outputs
+.out
+.storybook-out
+
+# Temporary folders
+tmp/
+temp/
+
+# Redis dump文件
+dump.rdb
+
+# 性能分析文件
+*.prof
+
+# 本地开发工具
+.tool-versions
+.python-version
+
+# 项目特定的忽略文件
+# SSL证书（如果有）
+ssl/
+certs/
+
+# 监控和分析
+monitoring/
+analytics/
+
+# 第三方集成配置
+integrations/
+webhooks/
+
+# 本地脚本和工具
+local_scripts/
+dev_tools/
+
+# 测试数据
+test_data/
+fixtures/
+sample_data/
+
+# API文档生成文件
+api_docs/
+swagger.json
+openapi.json
+
+# 部署相关
+deployment/
+.deploy/
+k8s/
+terraform/
+ansible/
+
+# 云服务配置
+.aws/
+.gcp/
+.azure/
+
+# 容器相关
+.container/
+.podman/
+
+# 性能测试结果
+benchmark/
+load_test/
+
+# 安全扫描结果
+security_reports/
+vulnerability_reports/
+
+# 许可证和法律文档的备份
+legal_backup/
+
+# ===========================================
+# 保留的重要文件（取消忽略）
+# ===========================================
+!.gitkeep
+!.gitignore
+!requirements.txt
+!Dockerfile
+!docker-compose.yml
+!docker-compose.prod.yml
+!README.md
+!LICENSE
+!.github/
