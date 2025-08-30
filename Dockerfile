@@ -1,5 +1,5 @@
 # 多阶段构建Dockerfile
-FROM python:3.11-slim as base
+FROM python:3.11-slim AS base
 
 # 设置环境变量
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -55,7 +55,7 @@ COPY . .
 # 创建必要的目录并设置权限
 RUN mkdir -p uploads logs && \
     chown -R appuser:appuser /app && \
-    chmod +x /app/scripts/*.sh
+    find /app/scripts -name "*.sh" -type f -exec chmod +x {} \; 2>/dev/null || true
 
 # 切换到非root用户
 USER appuser
