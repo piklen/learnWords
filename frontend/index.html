@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能教案生成平台</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .progress-bar {
+            transition: width 0.3s ease;
+        }
+        .sidebar {
+            transition: transform 0.3s ease;
+        }
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 导航栏 -->
+    <nav class="gradient-bg text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <button id="sidebar-toggle" class="md:hidden text-white p-2">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="flex-shrink-0 flex items-center">
+                        <i class="fas fa-graduation-cap text-2xl mr-2"></i>
+                        <h1 class="text-xl font-bold">智能教案生成平台</h1>
+                    </div>
+                </div>
+                
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#dashboard" class="nav-link px-3 py-2 rounded-md text-sm font-medium">仪表板</a>
+                        <a href="#documents" class="nav-link px-3 py-2 rounded-md text-sm font-medium">文档管理</a>
+                        <a href="#lesson-plans" class="nav-link px-3 py-2 rounded-md text-sm font-medium">教案管理</a>
+                        <a href="#export" class="nav-link px-3 py-2 rounded-md text-sm font-medium">导出</a>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <button id="notifications-btn" class="text-white p-2 relative">
+                            <i class="fas fa-bell"></i>
+                            <span id="notification-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
+                        </button>
+                    </div>
+                    <div class="relative">
+                        <button id="user-menu-btn" class="text-white p-2">
+                            <i class="fas fa-user-circle text-xl"></i>
+                        </button>
+                        <div id="user-menu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 hidden">
+                            <a href="#profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">个人资料</a>
+                            <a href="#settings" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">设置</a>
+                            <button id="logout-btn" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">退出登录</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 侧边栏 -->
+    <div id="sidebar" class="sidebar fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out">
+        <div class="flex items-center justify-between h-16 px-4 border-b">
+            <h2 class="text-lg font-semibold text-gray-800">菜单</h2>
+            <button id="sidebar-close" class="md:hidden text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <nav class="mt-8 px-4">
+            <div class="space-y-2">
+                <a href="#dashboard" class="sidebar-link flex items-center px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-tachometer-alt mr-3"></i>
+                    仪表板
+                </a>
+                <a href="#documents" class="sidebar-link flex items-center px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-file-alt mr-3"></i>
+                    文档管理
+                </a>
+                <a href="#lesson-plans" class="sidebar-link flex items-center px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-book mr-3"></i>
+                    教案管理
+                </a>
+                <a href="#upload" class="sidebar-link flex items-center px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-upload mr-3"></i>
+                    文件上传
+                </a>
+                <a href="#export" class="sidebar-link flex items-center px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-download mr-3"></i>
+                    数据导出
+                </a>
+                <a href="#search" class="sidebar-link flex items-center px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-search mr-3"></i>
+                    搜索过滤
+                </a>
+                <a href="#settings" class="sidebar-link flex items-center px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-cog mr-3"></i>
+                    系统设置
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="md:ml-64">
+        <!-- 仪表板 -->
+        <div id="dashboard" class="section p-6">
+            <div class="max-w-7xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8">仪表板</h2>
+                
+                <!-- 统计卡片 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-blue-500 bg-opacity-10">
+                                <i class="fas fa-file-alt text-blue-500 text-xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">总文档数</p>
+                                <p id="total-documents" class="text-2xl font-semibold text-gray-900">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-green-500 bg-opacity-10">
+                                <i class="fas fa-book text-green-500 text-xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">总教案数</p>
+                                <p id="total-lesson-plans" class="text-2xl font-semibold text-gray-900">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-purple-500 bg-opacity-10">
+                                <i class="fas fa-clock text-purple-500 text-xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">今日上传</p>
+                                <p id="today-uploads" class="text-2xl font-semibold text-gray-900">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-orange-500 bg-opacity-10">
+                                <i class="fas fa-download text-orange-500 text-xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">今日导出</p>
+                                <p id="today-exports" class="text-2xl font-semibold text-gray-900">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 最近活动 -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">最近文档</h3>
+                        <div id="recent-documents" class="space-y-3">
+                            <div class="text-gray-500 text-center py-4">暂无数据</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">最近教案</h3>
+                        <div id="recent-lesson-plans" class="space-y-3">
+                            <div class="text-gray-500 text-center py-4">暂无数据</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 文档管理 -->
+        <div id="documents" class="section p-6 hidden">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-gray-900">文档管理</h2>
+                    <button id="upload-document-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center">
+                        <i class="fas fa-plus mr-2"></i>
+                        上传文档
+                    </button>
+                </div>
+                
+                <!-- 搜索和过滤 -->
+                <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <input type="text" id="document-search" placeholder="搜索文档..." class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select id="document-type-filter" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">所有类型</option>
+                            <option value="pdf">PDF</option>
+                            <option value="docx">Word</option>
+                            <option value="txt">文本</option>
+                        </select>
+                        <input type="text" id="document-tags-filter" placeholder="标签过滤..." class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button id="document-search-btn" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">搜索</button>
+                    </div>
+                </div>
+                
+                <!-- 文档列表 -->
+                <div class="bg-white rounded-lg shadow-md">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-medium text-gray-900">文档列表</h3>
+                            <div class="flex space-x-2">
+                                <button id="export-documents-btn" class="text-gray-600 hover:text-gray-900 px-3 py-1 rounded border border-gray-300 hover:bg-gray-50">
+                                    <i class="fas fa-download mr-1"></i>导出
+                                </button>
+                                <button id="delete-documents-btn" class="text-red-600 hover:text-red-900 px-3 py-1 rounded border border-red-300 hover:bg-red-50">
+                                    <i class="fas fa-trash mr-1"></i>删除
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="documents-list" class="divide-y divide-gray-200">
+                        <div class="text-gray-500 text-center py-8">加载中...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 教案管理 -->
+        <div id="lesson-plans" class="section p-6 hidden">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-gray-900">教案管理</h2>
+                    <button id="create-lesson-plan-btn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center">
+                        <i class="fas fa-plus mr-2"></i>
+                        创建教案
+                    </button>
+                </div>
+                
+                <!-- 搜索和过滤 -->
+                <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <input type="text" id="lesson-plan-search" placeholder="搜索教案..." class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <select id="lesson-plan-subject-filter" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                            <option value="">所有学科</option>
+                            <option value="语文">语文</option>
+                            <option value="数学">数学</option>
+                            <option value="英语">英语</option>
+                            <option value="物理">物理</option>
+                            <option value="化学">化学</option>
+                        </select>
+                        <select id="lesson-plan-grade-filter" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                            <option value="">所有年级</option>
+                            <option value="小学">小学</option>
+                            <option value="初中">初中</option>
+                            <option value="高中">高中</option>
+                        </select>
+                        <button id="lesson-plan-search-btn" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">搜索</button>
+                    </div>
+                </div>
+                
+                <!-- 教案列表 -->
+                <div class="bg-white rounded-lg shadow-md">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-medium text-gray-900">教案列表</h3>
+                            <div class="flex space-x-2">
+                                <button id="export-lesson-plans-btn" class="text-gray-600 hover:text-gray-900 px-3 py-1 rounded border border-gray-300 hover:bg-gray-50">
+                                    <i class="fas fa-download mr-1"></i>导出
+                                </button>
+                                <button id="delete-lesson-plans-btn" class="text-red-600 hover:text-red-900 px-3 py-1 rounded border border-red-300 hover:bg-red-50">
+                                    <i class="fas fa-trash mr-1"></i>删除
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="lesson-plans-list" class="divide-y divide-gray-200">
+                        <div class="text-gray-500 text-center py-8">加载中...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 文件上传 -->
+        <div id="upload" class="section p-6 hidden">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8">文件上传</h2>
+                
+                <div class="bg-white rounded-lg shadow-md p-8">
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center" id="upload-area">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">拖拽文件到此处或点击上传</h3>
+                        <p class="text-gray-500 mb-4">支持 PDF、Word、文本等格式，最大 50MB</p>
+                        <input type="file" id="file-input" class="hidden" multiple accept=".pdf,.docx,.txt,.png,.jpg,.jpeg">
+                        <button id="select-files-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg">
+                            选择文件
+                        </button>
+                    </div>
+                    
+                    <!-- 上传进度 -->
+                    <div id="upload-progress" class="mt-8 space-y-4 hidden">
+                        <h4 class="text-lg font-medium text-gray-900">上传进度</h4>
+                        <div id="upload-items" class="space-y-3">
+                            <!-- 上传项目将在这里动态添加 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据导出 -->
+        <div id="export" class="section p-6 hidden">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8">数据导出</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- 文档导出 -->
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">文档导出</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">导出格式</label>
+                                <select id="document-export-format" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="json">JSON</option>
+                                    <option value="csv">CSV</option>
+                                    <option value="xml">XML</option>
+                                    <option value="pdf">PDF</option>
+                                    <option value="docx">Word</option>
+                                    <option value="zip">ZIP (全部格式)</option>
+                                </select>
+                            </div>
+                            <button id="export-documents-btn-page" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                                <i class="fas fa-download mr-2"></i>导出文档
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 教案导出 -->
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">教案导出</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">导出格式</label>
+                                <select id="lesson-plan-export-format" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                    <option value="json">JSON</option>
+                                    <option value="csv">CSV</option>
+                                    <option value="xml">XML</option>
+                                    <option value="pdf">PDF</option>
+                                    <option value="docx">Word</option>
+                                    <option value="zip">ZIP (全部格式)</option>
+                                </select>
+                            </div>
+                            <button id="export-lesson-plans-btn-page" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
+                                <i class="fas fa-download mr-2"></i>导出教案
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 全部数据导出 -->
+                <div class="mt-8 bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">全部数据导出</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">导出格式</label>
+                            <select id="all-data-export-format" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <option value="json">JSON</option>
+                                <option value="csv">CSV</option>
+                                <option value="xml">XML</option>
+                                <option value="pdf">PDF</option>
+                                <option value="docx">Word</option>
+                                <option value="zip">ZIP (全部格式)</option>
+                            </select>
+                        </div>
+                        <div class="flex items-end">
+                            <button id="export-all-data-btn" class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg">
+                                <i class="fas fa-download mr-2"></i>导出全部数据
+                            </button>
+                        </div>
+                        <div class="flex items-end">
+                            <button id="export-stats-btn" class="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">
+                                <i class="fas fa-chart-bar mr-2"></i>导出统计
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 搜索过滤 -->
+        <div id="search" class="section p-6 hidden">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8">搜索过滤</h2>
+                
+                <!-- 高级搜索 -->
+                <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">高级搜索</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">关键词</label>
+                            <input type="text" id="advanced-search-keyword" placeholder="输入搜索关键词..." class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">数据类型</label>
+                            <select id="advanced-search-type" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="all">全部</option>
+                                <option value="documents">文档</option>
+                                <option value="lesson-plans">教案</option>
+                            </select>
+                        </div>
+                        <div class="flex items-end">
+                            <button id="advanced-search-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                                <i class="fas fa-search mr-2"></i>搜索
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 搜索结果 -->
+                <div id="search-results" class="bg-white rounded-lg shadow-md hidden">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">搜索结果</h3>
+                    </div>
+                    <div id="search-results-content" class="p-6">
+                        <!-- 搜索结果将在这里显示 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 系统设置 -->
+        <div id="settings" class="section p-6 hidden">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8">系统设置</h2>
+                
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">用户设置</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">用户名</label>
+                            <input type="text" id="username-setting" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">邮箱</label>
+                            <input type="email" id="email-setting" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">角色</label>
+                            <select id="role-setting" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="student">学生</option>
+                                <option value="teacher">教师</option>
+                                <option value="admin">管理员</option>
+                            </select>
+                        </div>
+                        <button id="save-settings-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg">
+                            保存设置
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框 -->
+    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div id="modal-content" class="bg-white rounded-lg shadow-xl max-w-md w-full">
+                <!-- 模态框内容将在这里动态添加 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知 -->
+    <div id="notifications-container" class="fixed top-4 right-4 z-50 space-y-2">
+        <!-- 通知将在这里动态添加 -->
+    </div>
+
+    <!-- WebSocket状态指示器 -->
+    <div id="websocket-status" class="fixed bottom-4 right-4 z-40">
+        <div class="bg-gray-800 text-white px-3 py-2 rounded-lg text-sm">
+            <span id="ws-status-text">连接中...</span>
+            <div id="ws-status-indicator" class="inline-block w-2 h-2 bg-yellow-500 rounded-full ml-2"></div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

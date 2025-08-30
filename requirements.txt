@@ -1,0 +1,48 @@
+# Web框架
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# 数据库
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.9
+alembic==1.12.1
+
+# Redis缓存
+redis==5.0.1
+
+# 认证和安全
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+
+# 异步任务
+celery==5.3.4
+
+# 文件处理
+python-docx==1.1.0
+reportlab==4.0.7
+Pillow==10.1.0
+
+# 环境配置
+pydantic-settings==2.1.0
+python-dotenv==1.0.0
+
+# 日志
+loguru==0.7.2
+
+# 工具库
+python-dateutil==2.8.2
+pytz==2023.3
+
+# 开发工具
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2
+
+# 云存储支持
+boto3==1.34.0  # Cloudflare R2 / AWS S3支持
+
+# AI API支持
+google-generativeai==0.3.2  # Google Gemini API支持
+openai==1.3.7   # OpenAI API支持（可选）
+anthropic==0.8.1  # Anthropic Claude API支持（可选）

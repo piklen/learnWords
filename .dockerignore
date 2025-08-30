@@ -1,0 +1,68 @@
+# Git相关
+.git
+.gitignore
+.gitattributes
+
+# 文档
+*.md
+docs/
+README*
+
+# 环境文件
+.env
+.env.local
+.env.*.local
+
+# 日志文件
+logs/
+*.log
+
+# 临时文件
+*.tmp
+*.temp
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# 测试相关
+tests/
+test_*.py
+*_test.py
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE相关
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 备份文件
+backups/
+*.bak
+*.backup
+
+# 上传文件
+uploads/
+
+# Docker相关
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# 脚本文件
+scripts/
+*.sh
+
+# 配置文件
+nginx/
+alembic.ini
