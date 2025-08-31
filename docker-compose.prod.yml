@@ -73,7 +73,7 @@ services:
       target: production
     container_name: learnwords_app_prod
     ports:
-      - "${APP_PORT:-6773}:6773"
+      - "${APP_PORT:-18773}:6773"
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-lesson_planner}
       - REDIS_URL=${REDIS_PASSWORD:+redis://:${REDIS_PASSWORD}@redis:6379}${REDIS_PASSWORD:-redis://redis:6379}
@@ -194,8 +194,8 @@ services:
     image: nginx:alpine
     container_name: learnwords_nginx_prod
     ports:
-      - "${NGINX_PORT:-80}:80"
-      - "${NGINX_SSL_PORT:-443}:443"
+      - "${NGINX_PORT:-18080}:80"
+      - "${NGINX_SSL_PORT:-18443}:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro

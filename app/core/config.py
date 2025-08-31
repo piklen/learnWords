@@ -6,7 +6,7 @@ import secrets
 class Settings(BaseSettings):
     # Server Configuration
     host: str = "0.0.0.0"
-    port: int = 6773
+    port: int = 18773
     
     # Database
     database_url: str = "postgresql://postgres:password@localhost:5432/lesson_planner"

@@ -115,9 +115,10 @@ docker-compose logs -f app
 
 ### 4. 访问应用
 
-- **API文档**: http://localhost:6773/api/docs
-- **健康检查**: http://localhost:6773/health
-- **前端界面**: http://localhost:6773/
+- **API文档**: http://localhost:18773/api/docs
+- **健康检查**: http://localhost:18773/health
+- **Nginx代理**: http://localhost:18080/
+- **直接访问应用**: http://localhost:18773/
 
 ## 🔧 配置指南
 

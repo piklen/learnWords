@@ -42,6 +42,7 @@ async def startup_event():
     """应用启动事件"""
     logger.info("🚀 智能教案生成平台启动中...")
     logger.info(f"🌐 服务器地址: {settings.host}:{settings.port}")
+    logger.info(f"🔗 外部访问地址: http://localhost:{settings.port}")
     logger.info(f"📊 调试模式: {settings.debug}")
     logger.info(f"🔗 API前缀: {settings.api_prefix}")
     logger.info(f"📁 最大文件大小: {settings.max_file_size / (1024*1024):.1f}MB")
