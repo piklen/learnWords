@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, documents, lesson_plans, health, admin, websocket, export, ai_management
+from app.api.v1.endpoints import auth, documents, lesson_plans, health, admin, websocket, export, ai_management, monitoring
 
 api_router = APIRouter()
 
@@ -10,6 +10,7 @@ api_router.include_router(health.router, prefix="/health", tags=["health"])
 api_router.include_router(admin.router, prefix="/admin", tags=["admin"])
 api_router.include_router(export.router, prefix="/export", tags=["export"])
 api_router.include_router(ai_management.router, prefix="/ai", tags=["ai management"])
+api_router.include_router(monitoring.router, prefix="/monitoring", tags=["monitoring"])
 
 # WebSocket路由需要单独处理，因为它不是标准的HTTP路由
 websocket_router = APIRouter()

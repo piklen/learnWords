@@ -1,404 +1,373 @@
-# 智能教案生成平台 🎓
+# LearnWords 📚
 
-基于人工智能的智能教案生成系统，帮助教育工作者快速创建高质量、可定制的教案。支持多种AI服务提供商和云存储解决方案。
+<div align="center">
 
-## ✨ 项目特色
+[![CI](https://github.com/learnwords/learnwords/workflows/CI/badge.svg)](https://github.com/learnwords/learnwords/actions)
+[![codecov](https://codecov.io/gh/learnwords/learnwords/branch/main/graph/badge.svg)](https://codecov.io/gh/learnwords/learnwords)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Docker](https://img.shields.io/badge/docker-supported-blue.svg)](https://www.docker.com/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-- 🤖 **多AI支持**: 支持Google Gemini、OpenAI GPT、Anthropic Claude等多种AI模型
-- ☁️ **云存储**: 集成Cloudflare R2存储，高性能、低成本
-- 📚 **多格式支持**: 支持PDF、图片等教材格式上传和处理
-- 🎯 **个性化定制**: 根据年级、学科、教学模式等要求定制教案
-- ⚡ **异步处理**: 高效的后台文档处理和教案生成
-- 🔒 **安全可靠**: 完整的用户认证和文件安全机制
-- 🌐 **WebSocket**: 实时进度更新和通知
-- 📤 **多格式导出**: 支持多种教案导出格式
-- 🔄 **灵活配置**: 支持多种存储后端和AI提供商切换
+*AI-powered lesson plan generator for educators worldwide* 🎓
 
-## 🏗️ 技术架构
+[**Documentation**](https://learnwords.readthedocs.io) | [**Demo**](https://demo.learnwords.dev) | [**API Docs**](https://api.learnwords.dev/docs) | [**Contributing**](CONTRIBUTING.md)
 
-### 核心技术栈
-- **后端框架**: FastAPI + Python 3.11
-- **数据库**: PostgreSQL + Redis
-- **异步任务**: Celery + Redis
-- **容器化**: Docker + Docker Compose
-- **反向代理**: Nginx
+</div>
 
-### AI服务支持
-- **Google Gemini**: 主推AI服务，性价比高
-- **OpenAI GPT**: 可选，支持GPT-4等模型
-- **Anthropic Claude**: 可选，支持Claude-3系列
+## ✨ Features
 
-### 存储方案
-- **Cloudflare R2**: 主要存储方案，兼容S3 API
-- **AWS S3**: 备用存储方案
-- **本地存储**: 开发环境支持
+- 🤖 **Multiple AI Providers** - Support for Google Gemini, OpenAI GPT, and Anthropic Claude
+- 📄 **Document Processing** - Upload and analyze educational materials (PDF, images, documents)
+- 🎯 **Personalized Lesson Plans** - Generate customized lesson plans based on grade level, subject, and teaching style
+- ☁️ **Cloud Storage** - Integrated with Cloudflare R2 and AWS S3 for scalable file storage
+- ⚡ **Real-time Updates** - WebSocket support for live progress tracking
+- 📤 **Export Options** - Multiple export formats for lesson plans
+- 🔒 **Secure & Scalable** - Enterprise-ready with authentication, rate limiting, and monitoring
+- 🌐 **API-First** - Comprehensive REST API with OpenAPI documentation
+- 🐳 **Docker Ready** - One-command deployment with Docker Compose
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 环境要求
+### Prerequisites
 
-- Docker 和 Docker Compose
-- Python 3.11+ (仅开发环境)
+- Python 3.11+ or Docker
+- PostgreSQL 15+ and Redis 7+ (or use Docker Compose)
 
-### 1. 克隆项目
+### Option 1: Docker Compose (Recommended)
 
 ```bash
-git clone <repository-url>
-cd learnWords
-```
+# Clone the repository
+git clone https://github.com/learnwords/learnwords.git
+cd learnwords
 
-### 2. 配置环境变量
-
-复制环境变量示例文件并配置：
-
-```bash
+# Copy environment configuration
 cp env.example .env
-```
 
-编辑 `.env` 文件，填入必要的配置信息：
+# Edit configuration (add your AI API keys)
+nano .env
 
-```env
-# 应用配置
-APP_PORT=6773
-DEBUG=false
-SECRET_KEY=your_secret_key_here
-
-# Cloudflare R2存储配置（推荐）
-R2_ACCESS_KEY_ID=your_r2_access_key
-R2_SECRET_ACCESS_KEY=your_r2_secret_key
-R2_BUCKET_NAME=your_bucket_name
-R2_ACCOUNT_ID=your_account_id
-R2_ENDPOINT_URL=https://your_account_id.r2.cloudflarestorage.com
-STORAGE_BACKEND=r2
-
-# AI服务配置
-AI_PROVIDER=gemini
-
-# Google Gemini API配置（推荐）
-GEMINI_API_KEY=your_gemini_api_key
-GEMINI_MODEL=gemini-1.5-flash
-```
-
-### 3. 启动服务
-
-#### 方法一：使用部署脚本（推荐）
-
-```bash
-# 给脚本添加执行权限
-chmod +x deploy.sh
-
-# 部署开发环境
-./deploy.sh dev
-
-# 或部署生产环境
-./deploy.sh prod
-
-# 查看服务状态
-./deploy.sh status
-```
-
-#### 方法二：手动启动
-
-```bash
-# 开发环境
+# Start all services
 docker-compose up -d
 
-# 生产环境
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d
-
-# 查看服务状态
+# Check status
 docker-compose ps
-
-# 查看日志
-docker-compose logs -f app
 ```
 
-### 4. 访问应用
+### Option 2: Local Development
 
-- **API文档**: http://localhost:18773/api/docs
-- **健康检查**: http://localhost:18773/health
-- **Nginx代理**: http://localhost:18080/
-- **直接访问应用**: http://localhost:18773/
+```bash
+# Clone and setup
+git clone https://github.com/learnwords/learnwords.git
+cd learnwords
 
-## 🔧 配置指南
+# Install dependencies
+pip install -e ".[dev]"
 
-### AI服务配置
+# Setup environment
+cp env.example .env
+# Edit .env with your configuration
 
-#### Google Gemini (推荐)
+# Initialize database
+learnwords init-db
 
-1. 访问 [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. 创建API密钥
-3. 在 `.env` 文件中配置：
+# Start the server
+learnwords serve
+```
 
-```env
+### Access the Application
+
+- **Web Interface**: http://localhost:18773
+- **API Documentation**: http://localhost:18773/api/docs
+- **Health Check**: http://localhost:18773/health
+
+## 📖 Documentation
+
+### Quick Examples
+
+#### Generate a Lesson Plan
+
+```python
+import httpx
+
+# Upload a document
+with open("math_textbook.pdf", "rb") as f:
+    upload_response = httpx.post(
+        "http://localhost:18773/api/v1/documents/upload",
+        files={"file": f},
+        data={"title": "Math Textbook Chapter 1"}
+    )
+document_id = upload_response.json()["id"]
+
+# Create lesson plan
+lesson_plan_data = {
+    "document_id": document_id,
+    "grade_level": "高中",
+    "subject": "数学",
+    "duration_minutes": 45,
+    "learning_objectives": ["理解二次方程", "掌握求解方法"],
+    "pedagogical_style": "启发式"
+}
+
+response = httpx.post(
+    "http://localhost:18773/api/v1/lesson-plans/",
+    json=lesson_plan_data
+)
+```
+
+#### Using the CLI
+
+```bash
+# Check application health
+learnwords health
+
+# Create a new user
+learnwords create-user --email teacher@school.edu --username teacher
+
+# Start background worker
+learnwords worker
+
+# Show configuration
+learnwords config
+```
+
+### API Reference
+
+The complete API documentation is available at `/api/docs` when running the application, or online at [api.learnwords.dev/docs](https://api.learnwords.dev/docs).
+
+Key endpoints:
+- **Authentication**: `POST /api/v1/auth/{register,login}`
+- **Documents**: `GET|POST /api/v1/documents/`
+- **Lesson Plans**: `GET|POST /api/v1/lesson-plans/`
+- **AI Management**: `GET /api/v1/ai/providers`
+
+## 🏗️ Architecture
+
+LearnWords follows a modern, scalable architecture:
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Web Client    │    │   Mobile App    │    │  3rd Party API  │
+└─────────┬───────┘    └─────────┬───────┘    └─────────┬───────┘
+          │                      │                      │
+          └──────────────────────┼──────────────────────┘
+                                 │
+                    ┌─────────────▼───────────────┐
+                    │      Nginx Load Balancer    │
+                    └─────────────┬───────────────┘
+                                  │
+                    ┌─────────────▼───────────────┐
+                    │     FastAPI Application     │
+                    │   (Multiple Instances)      │
+                    └─────────────┬───────────────┘
+                                  │
+          ┌───────────────────────┼───────────────────────┐
+          │                       │                       │
+┌─────────▼───────┐   ┌───────────▼──────────┐   ┌────────▼────────┐
+│   PostgreSQL    │   │      Redis Cache     │   │  Celery Workers │
+│   (Read/Write)  │   │    (Session/Tasks)   │   │ (Background)    │
+└─────────────────┘   └──────────────────────┘   └─────────────────┘
+          │                       │                       │
+          │                       │                       │
+┌─────────▼───────┐   ┌───────────▼──────────┐   ┌────────▼────────┐
+│   File Storage  │   │    AI Providers      │   │   Monitoring    │
+│ (R2/S3/Local)   │   │ (Gemini/GPT/Claude)  │   │ (Prometheus)    │
+└─────────────────┘   └──────────────────────┘   └─────────────────┘
+```
+
+### Key Components
+
+- **FastAPI Application**: Modern Python web framework with automatic OpenAPI docs
+- **PostgreSQL**: Primary database with read replica support
+- **Redis**: Caching and task queue backend
+- **Celery**: Distributed task processing for AI operations
+- **Multiple AI Providers**: Intelligent fallback and load balancing
+- **Cloud Storage**: Scalable file storage with CDN support
+
+## 🛠️ Development
+
+### Prerequisites
+
+- Python 3.11+
+- PostgreSQL 15+
+- Redis 7+
+- Node.js 18+ (for documentation)
+
+### Setup Development Environment
+
+```bash
+# Clone repository
+git clone https://github.com/learnwords/learnwords.git
+cd learnwords
+
+# Install with development dependencies
+pip install -e ".[dev]"
+
+# Install pre-commit hooks
+pre-commit install
+
+# Setup test database
+createdb learnwords_test
+learnwords init-db
+
+# Run tests
+pytest
+
+# Start development server
+learnwords serve --reload
+```
+
+### Code Quality
+
+We maintain high code quality standards:
+
+```bash
+# Format code
+black .
+ruff --fix .
+
+# Type checking
+mypy app
+
+# Security scanning
+bandit -r app
+
+# Run all checks
+pre-commit run --all-files
+```
+
+### Testing
+
+```bash
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=app --cov-report=html
+
+# Run specific test types
+pytest -m unit          # Unit tests only
+pytest -m integration   # Integration tests only
+pytest -m e2e           # End-to-end tests only
+```
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Key configuration options:
+
+```bash
+# Application
+DEBUG=false
+SECRET_KEY=your-secret-key
+APP_PORT=18773
+
+# Database
+DATABASE_URL=postgresql://user:pass@localhost:5432/learnwords
+REDIS_URL=redis://localhost:6379
+
+# AI Providers
 AI_PROVIDER=gemini
-GEMINI_API_KEY=your_gemini_api_key
-GEMINI_MODEL=gemini-1.5-flash  # 或 gemini-1.5-pro
-```
+GEMINI_API_KEY=your-gemini-key
+OPENAI_API_KEY=your-openai-key
+ANTHROPIC_API_KEY=your-claude-key
 
-#### OpenAI (可选)
-
-```env
-AI_PROVIDER=openai
-OPENAI_API_KEY=your_openai_api_key
-```
-
-#### Anthropic Claude (可选)
-
-```env
-AI_PROVIDER=anthropic
-ANTHROPIC_API_KEY=your_anthropic_api_key
-```
-
-### 存储配置
-
-#### Cloudflare R2 (推荐)
-
-1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com/)
-2. 进入 R2 Object Storage
-3. 创建存储桶
-4. 生成 API 令牌
-5. 配置环境变量：
-
-```env
+# Storage
 STORAGE_BACKEND=r2
-R2_ACCESS_KEY_ID=your_access_key
-R2_SECRET_ACCESS_KEY=your_secret_key
-R2_BUCKET_NAME=your_bucket_name
-R2_ACCOUNT_ID=your_account_id
+R2_ACCESS_KEY_ID=your-r2-key
+R2_SECRET_ACCESS_KEY=your-r2-secret
+R2_BUCKET_NAME=your-bucket
+
+# Performance
+WORKER_CONCURRENCY=2
+CACHE_TTL=3600
 ```
 
-#### AWS S3 (备用)
+See [`env.example`](env.example) for complete configuration options.
 
-```env
-STORAGE_BACKEND=s3
-AWS_ACCESS_KEY_ID=your_aws_access_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret_key
-AWS_S3_BUCKET=your_s3_bucket
-AWS_REGION=us-east-1
-```
+### Docker Deployment
 
-#### 本地存储 (开发)
+Production deployment with monitoring:
 
-```env
-STORAGE_BACKEND=local
-```
-
-## 📖 API文档
-
-### 认证相关
-- `POST /api/v1/auth/register` - 用户注册
-- `POST /api/v1/auth/login` - 用户登录
-
-### 文档管理
-- `POST /api/v1/documents/upload-url` - 获取上传URL
-- `POST /api/v1/documents/{id}/process` - 触发文档处理
-- `GET /api/v1/documents/` - 获取文档列表
-- `GET /api/v1/documents/{id}` - 获取文档详情
-
-### 教案生成
-- `POST /api/v1/lesson-plans/` - 创建教案生成任务
-- `GET /api/v1/lesson-plans/` - 获取教案列表
-- `GET /api/v1/lesson-plans/{id}` - 获取教案详情
-- `POST /api/v1/lesson-plans/{id}/regenerate` - 重新生成教案
-
-### AI服务管理
-- `GET /api/v1/ai/providers` - 获取AI提供商信息
-- `GET /api/v1/ai/providers/available` - 获取可用提供商列表
-- `POST /api/v1/ai/providers/switch` - 切换AI提供商
-- `POST /api/v1/ai/generate` - 直接调用AI生成文本
-- `POST /api/v1/ai/analyze` - AI文档分析
-- `GET /api/v1/ai/health` - AI服务健康检查
-
-### 导出功能
-- `GET /api/v1/export/formats` - 获取支持的导出格式
-- `POST /api/v1/export/lesson-plan/{id}` - 导出教案
-
-### WebSocket
-- `WS /api/v1/ws/{user_id}` - 实时通知和进度更新
-
-## 🛠️ 开发指南
-
-### 本地开发环境
-
-1. **安装依赖**：
 ```bash
-pip install -r requirements.txt
+# Production deployment
+docker-compose -f docker-compose.yml -f docker-compose.optimized.yml up -d
+
+# With monitoring stack
+docker-compose --profile monitoring --profile logging up -d
+
+# Scale workers
+docker-compose up -d --scale worker=4
 ```
 
-2. **启动数据库服务**：
-```bash
-docker-compose up postgres redis -d
-```
+## 📊 Monitoring
 
-3. **运行数据库迁移**：
-```bash
-alembic upgrade head
-```
+LearnWords includes comprehensive monitoring:
 
-4. **启动应用**：
-```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 6773
-```
+- **Metrics**: Prometheus + Grafana dashboards
+- **Logging**: Structured logs with ELK stack
+- **Health Checks**: Application and dependency health endpoints
+- **Alerting**: Configurable alerts for performance and errors
 
-5. **启动Worker**：
-```bash
-celery -A app.celery_app worker --loglevel=info
-```
+Access monitoring:
+- **Grafana**: http://localhost:19091 (admin/admin)
+- **Prometheus**: http://localhost:19090
+- **Kibana**: http://localhost:19292
 
-### 项目结构
+## 🤝 Contributing
 
-```
-app/
-├── api/                    # API端点
-│   └── v1/               # API版本1
-│       ├── api.py        # 路由汇总
-│       └── endpoints/    # 具体端点
-├── core/                  # 核心配置
-│   ├── config.py         # 应用配置
-│   ├── database.py       # 数据库配置
-│   ├── security.py       # 安全配置
-│   └── middleware.py     # 中间件
-├── models/                # 数据模型
-├── schemas/               # Pydantic模型
-├── services/              # 业务逻辑服务
-│   ├── ai_service.py     # AI服务管理
-│   ├── storage_service.py # 存储服务
-│   └── prompt_engine.py  # 提示词引擎
-├── tasks/                 # 异步任务
-└── main.py               # 应用入口
-```
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
-### 添加新的AI提供商
+### Quick Contribution Steps
 
-1. 在 `app/services/ai_service.py` 中创建新的Provider类
-2. 继承 `AIProvider` 抽象基类
-3. 实现必要的方法
-4. 在 `AIService` 中注册新提供商
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Add tests for your changes
+5. Ensure all tests pass (`pytest`)
+6. Commit your changes (`git commit -m 'Add amazing feature'`)
+7. Push to the branch (`git push origin feature/amazing-feature`)
+8. Open a Pull Request
 
-### 添加新的存储后端
+### Development Guidelines
 
-1. 在 `app/services/storage_service.py` 中添加新的存储逻辑
-2. 更新 `_initialize_client` 方法
-3. 实现相应的上传、下载、删除方法
+- Write tests for new features
+- Follow the code style (Black + Ruff)
+- Update documentation as needed
+- Add type hints to new code
+- Keep security in mind
 
-## 📊 监控和运维
+## 📜 License
 
-### 健康检查端点
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-- **应用健康**: `GET /health`
-- **详细健康检查**: `GET /api/v1/health/health`
-- **AI服务健康**: `GET /api/v1/ai/health`
+## 🙏 Acknowledgments
 
-### 日志管理
+- **AI Providers**: Google Gemini, OpenAI, Anthropic for powering our AI features
+- **Open Source**: Built on amazing open-source projects like FastAPI, SQLAlchemy, and many others
+- **Community**: Thanks to all contributors and users
 
-日志文件位置：
-- 应用日志: `./logs/app.log`
-- Worker日志: `./logs/worker.log`
-- Nginx日志: `./logs/nginx/`
+## 📞 Support
 
-### 性能优化
+- **Documentation**: [learnwords.readthedocs.io](https://learnwords.readthedocs.io)
+- **Issues**: [GitHub Issues](https://github.com/learnwords/learnwords/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/learnwords/learnwords/discussions)
+- **Email**: support@learnwords.dev
 
-1. **数据库优化**：
-   - 启用连接池
-   - 添加适当索引
-   - 定期清理旧数据
+## 🗺️ Roadmap
 
-2. **缓存策略**：
-   - Redis缓存常用查询
-   - 静态文件CDN加速
+- [ ] **Q1 2024**: Multi-language support
+- [ ] **Q2 2024**: Advanced analytics dashboard
+- [ ] **Q3 2024**: Mobile app
+- [ ] **Q4 2024**: Collaborative features
 
-3. **异步处理**：
-   - 文档处理异步化
-   - 教案生成后台处理
+---
 
-## 🚀 部署指南
+<div align="center">
 
-### 生产环境部署
+**[⭐ Star us on GitHub](https://github.com/learnwords/learnwords)** • **[🐦 Follow on Twitter](https://twitter.com/learnwords)** • **[💬 Join Discord](https://discord.gg/learnwords)**
 
-1. **环境准备**：
-```bash
-# 创建生产环境配置
-cp env.example .env.prod
-# 编辑生产环境配置
-```
+Made with ❤️ by the LearnWords team
 
-2. **使用生产配置启动**：
-```bash
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
-```
-
-3. **SSL证书配置**：
-   - 将SSL证书放在 `nginx/ssl/` 目录
-   - 更新 `nginx/nginx.conf` 配置
-
-4. **域名配置**：
-   - 配置DNS解析
-   - 更新Nginx配置
-
-### 扩展部署
-
-- **水平扩展**: 增加Worker实例数量
-- **负载均衡**: 使用Nginx负载均衡多个应用实例
-- **数据库**: 配置主从复制或读写分离
-
-## 🔒 安全考虑
-
-- **API密钥管理**: 使用环境变量存储敏感信息
-- **文件上传**: 限制文件类型和大小
-- **访问控制**: JWT令牌认证
-- **HTTPS**: 生产环境强制使用HTTPS
-- **防护措施**: 集成速率限制和CORS保护
-
-## 🤝 贡献指南
-
-1. Fork 项目
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启 Pull Request
-
-## 📄 许可证
-
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
-
-## 🆘 故障排除
-
-### 常见问题
-
-1. **AI服务不可用**：
-   - 检查API密钥配置
-   - 确认网络连接
-   - 查看AI服务健康检查
-
-2. **文件上传失败**：
-   - 检查存储配置
-   - 确认存储桶权限
-   - 查看存储服务日志
-
-3. **教案生成缓慢**：
-   - 检查Worker状态
-   - 增加Worker实例
-   - 优化AI提示词
-
-4. **数据库连接问题**：
-   - 检查数据库服务状态
-   - 确认连接字符串
-   - 查看数据库日志
-
-### 获取帮助
-
-- 查看API文档: http://localhost:6773/api/docs
-- 检查应用日志: `docker-compose logs -f app`
-- 查看Worker日志: `docker-compose logs -f worker`
-
-## 🔄 更新日志
-
-### v1.0.0
-- ✅ 支持多种AI服务提供商 (Gemini, OpenAI, Claude)
-- ✅ 集成Cloudflare R2存储
-- ✅ 端口更改为6773
-- ✅ 完善的API文档和配置指南
-- ✅ WebSocket实时通知
-- ✅ 多格式导出功能
-- ✅ 完整的Docker化部署方案
+</div>

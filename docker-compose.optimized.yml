@@ -1,0 +1,555 @@
+version: '3.8'
+
+services:
+  # PostgreSQL主数据库
+  postgres:
+    image: postgres:15-alpine
+    container_name: learnwords_postgres_optimized
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-lesson_planner}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+      # PostgreSQL优化配置
+      POSTGRES_SHARED_BUFFERS: ${POSTGRES_SHARED_BUFFERS:-256MB}
+      POSTGRES_EFFECTIVE_CACHE_SIZE: ${POSTGRES_EFFECTIVE_CACHE_SIZE:-1GB}
+      POSTGRES_WORK_MEM: ${POSTGRES_WORK_MEM:-4MB}
+      POSTGRES_MAINTENANCE_WORK_MEM: ${POSTGRES_MAINTENANCE_WORK_MEM:-64MB}
+    ports:
+      - "${POSTGRES_PORT:-15432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+      - ./postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+      - ./postgres/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+    command: >
+      postgres
+      -c shared_buffers=${POSTGRES_SHARED_BUFFERS:-256MB}
+      -c effective_cache_size=${POSTGRES_EFFECTIVE_CACHE_SIZE:-1GB}
+      -c work_mem=${POSTGRES_WORK_MEM:-4MB}
+      -c maintenance_work_mem=${POSTGRES_MAINTENANCE_WORK_MEM:-64MB}
+      -c max_connections=${POSTGRES_MAX_CONNECTIONS:-200}
+      -c random_page_cost=1.1
+      -c wal_buffers=16MB
+      -c checkpoint_completion_target=0.9
+      -c max_wal_size=1GB
+      -c min_wal_size=80MB
+      -c log_statement=all
+      -c log_min_duration_statement=1000
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-lesson_planner}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - learnwords_network_optimized
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+
+  # PostgreSQL读副本（可选）
+  postgres_read_replica:
+    image: postgres:15-alpine
+    container_name: learnwords_postgres_read_replica
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-lesson_planner}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGUSER: ${POSTGRES_USER:-postgres}
+      # 读副本配置
+      POSTGRES_PRIMARY_HOST: postgres
+      POSTGRES_PRIMARY_PORT: 5432
+    ports:
+      - "${POSTGRES_READ_PORT:-15433}:5432"
+    volumes:
+      - postgres_read_data:/var/lib/postgresql/data
+      - ./scripts/setup-replica.sh:/docker-entrypoint-initdb.d/setup-replica.sh:ro
+    command: >
+      postgres
+      -c hot_standby=on
+      -c max_standby_streaming_delay=30s
+      -c wal_receiver_status_interval=10s
+      -c hot_standby_feedback=on
+      -c log_statement=all
+      -c log_min_duration_statement=1000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-lesson_planner}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - learnwords_network_optimized
+    profiles:
+      - replica
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  # Redis集群
+  redis:
+    image: redis:7-alpine
+    container_name: learnwords_redis_optimized
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory ${REDIS_MAX_MEMORY:-512mb}
+      --maxmemory-policy allkeys-lru
+      --tcp-keepalive 300
+      --timeout 0
+      --tcp-backlog 511
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+      --rdbcompression yes
+      --rdbchecksum yes
+      --dir /data
+      --dbfilename dump.rdb
+      --appendfsync everysec
+      --auto-aof-rewrite-percentage 100
+      --auto-aof-rewrite-min-size 64mb
+      ${REDIS_PASSWORD:+--requirepass $REDIS_PASSWORD}
+    ports:
+      - "${REDIS_PORT:-16379}:6379"
+    volumes:
+      - redis_data:/data
+      - ./redis/redis.conf:/etc/redis/redis.conf:ro
+    healthcheck:
+      test: >
+        sh -c "
+        if [ -n '${REDIS_PASSWORD}' ]; then
+          redis-cli -a ${REDIS_PASSWORD} ping
+        else
+          redis-cli ping
+        fi
+        "
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - learnwords_network_optimized
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # 应用服务器集群
+  app1:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: learnwords_app1_optimized
+    ports:
+      - "${APP1_PORT:-18773}:6773"
+    environment: &app_env
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-lesson_planner}
+      - READ_REPLICA_DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres_read_replica:5432/${POSTGRES_DB:-lesson_planner}
+      - REDIS_URL=${REDIS_PASSWORD:+redis://:${REDIS_PASSWORD}@redis:6379}${REDIS_PASSWORD:-redis://redis:6379}
+      - R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
+      - R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}
+      - R2_BUCKET_NAME=${R2_BUCKET_NAME}
+      - R2_ACCOUNT_ID=${R2_ACCOUNT_ID}
+      - R2_ENDPOINT_URL=${R2_ENDPOINT_URL}
+      - R2_PUBLIC_DOMAIN=${R2_PUBLIC_DOMAIN}
+      - STORAGE_BACKEND=${STORAGE_BACKEND:-r2}
+      - AI_PROVIDER=${AI_PROVIDER:-gemini}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-1.5-flash}
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=${DEBUG:-false}
+      - ENVIRONMENT=production
+      - HOST=0.0.0.0
+      - PORT=6773
+      - INSTANCE_ID=app1
+      # 性能优化配置
+      - DB_POOL_SIZE=${DB_POOL_SIZE:-20}
+      - DB_MAX_OVERFLOW=${DB_MAX_OVERFLOW:-30}
+      - REDIS_POOL_SIZE=${REDIS_POOL_SIZE:-20}
+      - WORKER_CONCURRENCY=${WORKER_CONCURRENCY:-2}
+      - CACHE_TTL=${CACHE_TTL:-3600}
+      - AI_RETRY_ATTEMPTS=${AI_RETRY_ATTEMPTS:-3}
+      - ENABLE_METRICS=${ENABLE_METRICS:-true}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+      - app1_cache:/tmp/app_cache
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6773/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - learnwords_network_optimized
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1.5G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  app2:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: learnwords_app2_optimized
+    ports:
+      - "${APP2_PORT:-18774}:6773"
+    environment:
+      <<: *app_env
+      - INSTANCE_ID=app2
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+      - app2_cache:/tmp/app_cache
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6773/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - learnwords_network_optimized
+    profiles:
+      - scaling
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1.5G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # Celery Worker集群
+  worker1:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: learnwords_worker1_optimized
+    command: >
+      celery -A app.celery_app worker
+      --loglevel=info
+      --concurrency=${WORKER_CONCURRENCY:-2}
+      --queues=queue_high,queue_normal,queue_low
+      --prefetch-multiplier=1
+      --max-tasks-per-child=1000
+      --time-limit=1800
+      --soft-time-limit=1500
+      --hostname=worker1@%h
+    environment:
+      <<: *app_env
+      - WORKER_ID=worker1
+      - C_FORCE_ROOT=1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+      - worker1_temp:/tmp/worker_temp
+    restart: unless-stopped
+    networks:
+      - learnwords_network_optimized
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+
+  worker2:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: learnwords_worker2_optimized
+    command: >
+      celery -A app.celery_app worker
+      --loglevel=info
+      --concurrency=${WORKER_CONCURRENCY:-2}
+      --queues=queue_high,queue_normal,queue_low
+      --prefetch-multiplier=1
+      --max-tasks-per-child=1000
+      --time-limit=1800
+      --soft-time-limit=1500
+      --hostname=worker2@%h
+    environment:
+      <<: *app_env
+      - WORKER_ID=worker2
+      - C_FORCE_ROOT=1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+      - worker2_temp:/tmp/worker_temp
+    restart: unless-stopped
+    networks:
+      - learnwords_network_optimized
+    profiles:
+      - scaling
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+
+  # Nginx负载均衡器
+  nginx:
+    image: nginx:alpine
+    container_name: learnwords_nginx_optimized
+    ports:
+      - "${NGINX_PORT:-18080}:80"
+      - "${NGINX_SSL_PORT:-18443}:443"
+    volumes:
+      - ./nginx/nginx.optimized.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./uploads:/var/www/uploads:ro
+      - ./static:/var/www/static:ro
+      - nginx_cache:/var/cache/nginx
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - app1
+    restart: unless-stopped
+    networks:
+      - learnwords_network_optimized
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+  # 监控服务
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: learnwords_prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    ports:
+      - "${PROMETHEUS_PORT:-19090}:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    restart: unless-stopped
+    networks:
+      - learnwords_network_optimized
+    profiles:
+      - monitoring
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: learnwords_grafana
+    ports:
+      - "${GRAFANA_PORT:-19091}:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - learnwords_network_optimized
+    profiles:
+      - monitoring
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+  # 日志聚合
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
+    container_name: learnwords_elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "${ELASTICSEARCH_PORT:-19200}:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    restart: unless-stopped
+    networks:
+      - learnwords_network_optimized
+    profiles:
+      - logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.8.0
+    container_name: learnwords_logstash
+    volumes:
+      - ./logging/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+      - ./logs:/var/log/app:ro
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+    networks:
+      - learnwords_network_optimized
+    profiles:
+      - logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.8.0
+    container_name: learnwords_kibana
+    ports:
+      - "${KIBANA_PORT:-19292}:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+    networks:
+      - learnwords_network_optimized
+    profiles:
+      - logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+volumes:
+  postgres_data:
+    driver: local
+  postgres_read_data:
+    driver: local
+  redis_data:
+    driver: local
+  app1_cache:
+    driver: local
+  app2_cache:
+    driver: local
+  worker1_temp:
+    driver: local
+  worker2_temp:
+    driver: local
+  nginx_cache:
+    driver: local
+  nginx_logs:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+
+networks:
+  learnwords_network_optimized:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.22.0.0/16
+    driver_opts:
+      com.docker.network.bridge.name: learnwords_br_opt
